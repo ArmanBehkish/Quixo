@@ -89,6 +89,7 @@ class Game(object):
         players = [player1, player2]
         winner = -1
         while winner < 0:
+            # Alternate player_idx between 0 and 1
             self.current_player_idx += 1
             self.current_player_idx %= len(players)
             ok = False
