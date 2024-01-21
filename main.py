@@ -25,6 +25,8 @@ class MyPlayer(Player):
 if __name__ == '__main__':
     g = Game()
     g.print()
+    import sys
+    print(sys.executable)
     # player1 = MyPlayer()
     # player2 = RandomPlayer()
     # winner = g.play(player1, player2)
