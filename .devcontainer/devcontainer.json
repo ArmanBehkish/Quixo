@@ -1,9 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "Python 3",
+	"name": "My Python 3.10 Container!",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:1-3.10-bullseye",
+	"build": {
+        // Path is relative to the devcontainer.json file.
+        "dockerfile": "Dockerfile"
+    },	
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {}
@@ -24,8 +27,12 @@
 			"vscode": {
 				"extensions": [
 					"GitHub.copilot"
-		]
-	}
+				],
+				"settings": {
+					"python.defaultInterpreterPath": "/home/vscode/venv/bin/python",
+					"python.linting.enabled": true
+				}
+			}
 }
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
