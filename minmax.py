@@ -13,12 +13,16 @@ class MinMaxPlayer(Player):
         best_move = self.minmax(board, player, self.depth)
         return best_move
     
-    # MinMax algorithm that receives the board, the current player and the depth and returns the best move
+
     def minmax(self, board: list[list[int]], player: int, depth: int) -> tuple[tuple[int, int], Move]:
 
         possible_moves = self.get_possible_moves(board, player)
-        if len(possible_moves) == 0:
-            return None
+
+        # terminal node or depth limit reached.
+        if depth == 0 or board.check_winner() != -1 or possible_moves == None:
+            return self.get_score(board, player)
+
+
         best_move = possible_moves[0]
         best_score = float('-inf')
 
@@ -129,6 +133,8 @@ class MinMaxPlayer(Player):
                 if board[row][col] == player:
                     score += 1
         return score
+
+    # write a function that returns true if the game is over but there is no winner, false otherwise. this means that there are no more moves to be made
     
 
     # Get the new board after making the move
