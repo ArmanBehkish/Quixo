@@ -5,7 +5,7 @@ from minmax import MinMaxPlayer
 
 
 g = Game()
-g.print()
+#g.print()
 
 board = g.get_board()
 print(board.shape)
@@ -16,12 +16,12 @@ board[2, :] = 1
 board[3, :] = 0
 board[4, :] = -1
 print(board)
+print(type(board))
+print(board[4,3])
 
-p = MinMaxPlayer(2)
-possible_moves = p.get_possible_moves(board, 0)
-print(possible_moves)
+# p = MinMaxPlayer(2)
+# print(f"board score is :  {p.get_score(board, 20)}")
 
-print(float('-inf'))
 
 
 

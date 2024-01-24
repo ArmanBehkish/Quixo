@@ -18,7 +18,7 @@ class MinMaxPlayer(Player):
 
         possible_moves = self.get_possible_moves(board, player)
 
-        # terminal node or depth limit reached.
+        # terminal node: depth limit richead or there's a winner or no move available
         if depth == 0 or board.check_winner() != -1 or possible_moves == None:
             return self.get_score(board, player)
 
@@ -126,8 +126,13 @@ class MinMaxPlayer(Player):
     
     
     # player score: number of pieces on the board for the player
+    # TESTED
     def get_score(self, board: list[list[int]], player: int) -> int:
         score = 0
+
+        if player != 1 and player != 0:
+            raise ValueError("player must be 0 or 1")
+        
         for row in range(len(board)):
             for col in range(len(board[row])):
                 if board[row][col] == player:
