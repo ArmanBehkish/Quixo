@@ -11,3 +11,13 @@ function minimax(node, depth, maximizingPlayer) is
         for each child of node do
             value := min(value, minimax(child, depth − 1, TRUE))
         return value
+
+
+suggestions for score function:
+win-loss-draw check
+control the center positions
+nodes that will result in quicker wins compared to those that needs many moves to win can be higher
+the number of possible moves that a player can make in a state
+number of opportunities that a player has to win
+# of consecutive pieces a player has in a row, col, or diagonal
+number of lines player can still win (unblocked lines)

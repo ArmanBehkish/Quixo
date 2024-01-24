@@ -1,15 +1,19 @@
+from copy import deepcopy
 import random
 from game import Game, Move, Player
 
-# MinMaxPlayer class inherited from Player class that implements the MinMax algorithm to play Quixo game (as defined in the Game class) and implements the abstract method make_move from Player class which receives the Game object and returns a tuple with the position of the piece to move and the direction to move it.
 class MinMaxPlayer(Player):
     def __init__(self, depth: int) -> None:
         super().__init__()
         self.depth = depth
+        self.agent = "MinMax Agent"
 
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:  
+        self._game = game
         board = game.get_board()
         player = game.get_current_player()
+        self._maximizer_player = player
+        self._minimizer_player = 1 - player
         best_move = self.minmax(board, player, self.depth)
         return best_move
     
@@ -18,69 +22,39 @@ class MinMaxPlayer(Player):
 
         possible_moves = self.get_possible_moves(board, player)
 
-        # terminal node: depth limit richead or there's a winner or no move available
-        if depth == 0 or board.check_winner() != -1 or possible_moves == None:
+        # terminal node check
+        if depth == 0 or self.check_winner(board,player) != -1 or possible_moves == None:
             return self.get_score(board, player)
 
+        # here mini player
+        if player == self._minimizer_player:
+            value = float('inf')
+            best_move = possible_moves[0]
+            for move in possible_moves:
+                new_board = self.make_move_board(board, move, player)
+                # original player was assumed as maxplayer, so here we pass the minplayer
+                score = self.minmax(new_board, 1 - player, depth - 1) 
+                # take minimum score of childs
+                if score < value:
+                    value = score
+                    best_move = move
 
-        best_move = possible_moves[0]
-        best_score = float('-inf')
-
-        for move in possible_moves:
-            # Get the new board after making the move
-            new_board = self.make_move_board(board, move, player)
-            # Get the score of the new board
-            score = self.min(new_board, player, depth - 1)
-            if score > best_score:
-                best_score = score
-                best_move = move
+        # here max player
+        if player == self._maximizer_player:
+            value = float('-inf')
+            best_move = possible_moves[0]
+            for move in possible_moves:
+                new_board = self.make_move_board(board, move, player)
+                # original player was assumed as maxplayer, so here we pass the minplayer
+                score = self.minmax(new_board, 1 - player, depth - 1)
+                # take the maximum score of childs
+                if score > value:
+                    value = score
+                    best_move = move
 
         return best_move
-    
-    # Min algorithm that receives the board, the current player and the depth and returns the score of the board
-    def min(self, board: list[list[int]], player: int, depth: int) -> int:
-        # Get the possible moves from the board
-        possible_moves = self.get_possible_moves(board, player)
-        # If there are no possible moves, return the score of the board
-        if len(possible_moves) == 0:
-            return self.get_score(board, player)
-        # Initialize the best score with the best possible score
-        best_score = float('inf')
-        # For each possible move
-        for move in possible_moves:
-            # Get the new board after making the move
-            new_board = self.make_move_board(board, move, player)
-            # Get the score of the new board
-            score = self.max(new_board, player, depth - 1)
-            # If the score is better than the best score
-            if score < best_score:
-                # Update the best score
-                best_score = score
-        # Return the best score
-        return best_score
-    
-    # Max algorithm that receives the board, the current player and the depth and returns the score of the board
-    def max(self, board: list[list[int]], player: int, depth: int) -> int:
-        # Get the possible moves from the board
-        possible_moves = self.get_possible_moves(board, player)
-        # If there are no possible moves, return the score of the board
-        if len(possible_moves) == 0:
-            return self.get_score(board, player)
-        # Initialize the best score with the worst possible score
-        best_score = float('-inf')
-        # For each possible move
-        for move in possible_moves:
-            # Get the new board after making the move
-            new_board = self.make_move_board(board, move, player)
-            # Get the score of the new board
-            score = self.min(new_board, player, depth - 1)
-            # If the score is better than the best score
-            if score > best_score:
-                # Update the best score
-                best_score = score
-        # Return the best score
-        return best_score
-    
+ 
+
     # Get the possible moves from the board
     # TESTED
     def get_possible_moves(self, board: list[list[int]], player: int) -> list[tuple[tuple[int, int], Move]]:
@@ -139,47 +113,177 @@ class MinMaxPlayer(Player):
                     score += 1
         return score
 
-    # write a function that returns true if the game is over but there is no winner, false otherwise. this means that there are no more moves to be made
     
 
-    # Get the new board after making the move
-    def make_move_board(self, board: list[list[int]], move: tuple[tuple[int, int], Move], player: int) -> list[list[int]]:
-        # Get the row and column of the piece to move
-        row, col = move[0]
-        # Get the direction to move the piece
-        direction = move[1]
-        # Initialize the new board
-        new_board = []
-        # For each row
-        for r in range(len(board)):
-            # Initialize the new row
-            new_row = []
-            # For each column
-            for c in range(len(board[r])):
-                # If the piece is in the row and column of the piece to move
-                if r == row and c == col:
-                    # If the direction is to move the piece up
-                    if direction == Move.UP:
-                        # Add the piece to the new row
-                        new_row.append(board[r - 1][c])
-                    # If the direction is to move the piece down
-                    elif direction == Move.DOWN:
-                        # Add the piece to the new row
-                        new_row.append(board[r + 1][c])
-                    # If the direction is to move the piece left
-                    elif direction == Move.LEFT:
-                        # Add the piece to the new row
-                        new_row.append(board[r][c - 1])
-                    # If the direction is to move the piece right
-                    elif direction == Move.RIGHT:
-                        # Add the piece to the new row
-                        new_row.append(board[r][c + 1])
-                # If the piece is not in the row and column of the piece to move
-                else:
-                    # Add the piece to the new row
-                    new_row.append(board[r][c])
-            # Add the new row to the new board
-            new_board.append(new_row)
-        # Return the new board
-        return new_board
 
+    def make_move_board(self, board: list[list[int]], move: tuple[tuple[int, int], Move], player: int) -> list[list[int]]:
+        '''Get the new board after making the move; same logic as the GAME class'''
+
+        # inside all function I use row, col coordinates; I will switch places in the final return value of the agent move.
+        # passed move
+        row, col = move[0]
+        direction = move[1]
+
+        if player > 2:
+            raise ValueError("player must be 0 or 1")
+        
+        #prev_value = deepcopy(board[(row, col)])
+        acceptable, board = self.take((row, col), player, board)
+        if acceptable:
+            acceptable,new_board = self.slide((row, col), direction, board)
+            if not acceptable:
+                raise ValueError(f"slide tried in the {self.agent} is not acceptable!")
+            return new_board
+        raise ValueError(f"piece taken in the {self.agent} is not acceptable!")
+
+
+    def take(self, from_pos: tuple[int, int], player_id: int, board: list[list[int]]) -> bool:
+        '''Take piece'''
+        # acceptable only if in border
+        acceptable: bool = (
+            # check if it is in the first row
+            (from_pos[0] == 0 and from_pos[1] < 5)
+            # check if it is in the last row
+            or (from_pos[0] == 4 and from_pos[1] < 5)
+            # check if it is in the first column
+            or (from_pos[1] == 0 and from_pos[0] < 5)
+            # check if it is in the last column
+            or (from_pos[1] == 4 and from_pos[0] < 5)
+            # and check if the piece can be moved by the current player
+        ) and (board[from_pos] < 0 or board[from_pos] == player_id)
+        if acceptable:
+            board[from_pos] = player_id
+        return acceptable, board
+
+    def slide(self, from_pos: tuple[int, int], slide: Move, board: list[list[int]] ) -> bool:
+        '''Slide the other pieces'''
+        # define the corners
+        SIDES = [(0, 0), (0, 4), (4, 0), (4, 4)]
+        # if the piece position is not in a corner
+        if from_pos not in SIDES:
+            acceptable_top: bool = from_pos[0] == 0 and (
+                slide == Move.BOTTOM or slide == Move.LEFT or slide == Move.RIGHT
+            )
+            acceptable_bottom: bool = from_pos[0] == 4 and (
+                slide == Move.TOP or slide == Move.LEFT or slide == Move.RIGHT
+            )
+            acceptable_left: bool = from_pos[1] == 0 and (
+                slide == Move.BOTTOM or slide == Move.TOP or slide == Move.RIGHT
+            )
+            acceptable_right: bool = from_pos[1] == 4 and (
+                slide == Move.BOTTOM or slide == Move.TOP or slide == Move.LEFT
+            )
+        # if the piece position is in a corner
+        else:
+            acceptable_top: bool = from_pos == (0, 0) and (
+                slide == Move.BOTTOM or slide == Move.RIGHT)
+            acceptable_left: bool = from_pos == (4, 0) and (
+                slide == Move.TOP or slide == Move.RIGHT)
+            acceptable_right: bool = from_pos == (0, 4) and (
+                slide == Move.BOTTOM or slide == Move.LEFT)
+            acceptable_bottom: bool = from_pos == (4, 4) and (
+                slide == Move.TOP or slide == Move.LEFT)
+            
+        # check if the move is acceptable
+        acceptable: bool = acceptable_top or acceptable_bottom or acceptable_left or acceptable_right
+        # if it is
+        if acceptable:
+            # take the piece
+            piece = board[from_pos]
+            if slide == Move.LEFT:
+                # for each column starting from the column of the piece and moving to the left
+                for i in range(from_pos[1], 0, -1):
+                    # copy the value contained in the same row and the previous column
+                    board[(from_pos[0], i)] = board[(
+                        from_pos[0], i - 1)]
+                # move the piece to the left
+                board[(from_pos[0], 0)] = piece
+            # if the player wants to slide it to the right
+            elif slide == Move.RIGHT:
+                # for each column starting from the column of the piece and moving to the right
+                for i in range(from_pos[1], board.shape[1] - 1, 1):
+                    # copy the value contained in the same row and the following column
+                    board[(from_pos[0], i)] = board[(
+                        from_pos[0], i + 1)]
+                # move the piece to the right
+                board[(from_pos[0], board.shape[1] - 1)] = piece
+            # if the player wants to slide it upward
+            elif slide == Move.TOP:
+                # for each row starting from the row of the piece and going upward
+                for i in range(from_pos[0], 0, -1):
+                    # copy the value contained in the same column and the previous row
+                    board[(i, from_pos[1])] = board[(
+                        i - 1, from_pos[1])]
+                # move the piece up
+                board[(0, from_pos[1])] = piece
+            # if the player wants to slide it downward
+            elif slide == Move.BOTTOM:
+                # for each row starting from the row of the piece and going downward
+                for i in range(from_pos[0], board.shape[0] - 1, 1):
+                    # copy the value contained in the same column and the following row
+                    board[(i, from_pos[1])] = board[(
+                        i + 1, from_pos[1])]
+                # move the piece down
+                board[(board.shape[0] - 1, from_pos[1])] = piece
+        return acceptable,board
+    
+
+
+    def check_winner(self, board: list[list[int]],player: int) -> int:
+        '''Check if there is a winner,
+        why the winner should not be the current player?'''
+
+     # for each row
+        winner = -1
+        for x in range(board.shape[0]):
+            # if a player has completed an entire row
+            if board[x, 0] != -1 and all(board[x, :] == board[x, 0]):
+                # return winner is this guy
+                winner = board[x, 0]
+        #if winner > -1 and winner != player:
+        if winner > -1:
+            return winner
+        # for each column
+        for y in range(board.shape[1]):
+            # if a player has completed an entire column
+            if board[0, y] != -1 and all(board[:, y] == board[0, y]):
+                # return the relative id
+                winner = board[0, y]
+        #if winner > -1 and winner != player:
+        if winner > -1:
+            return winner
+        # if a player has completed the principal diagonal
+        if board[0, 0] != -1 and all(
+            [board[x, x]
+                for x in range(board.shape[0])] == board[0, 0]
+        ):
+            # return the relative id
+            winner = board[0, 0]
+        #if winner > -1 and winner != self.get_current_player():
+        if winner > -1:
+            return winner
+        # if a player has completed the secondary diagonal
+        if board[0, -1] != -1 and all(
+            [board[x, -(x + 1)]
+             for x in range(board.shape[0])] == board[0, -1]
+        ):
+            # return the relative id
+            winner = self._board[0, -1]
+        return winner
+
+    def play(self, player1: Player, player2: Player) -> int:
+        '''Play the game. Returns the winning player'''
+        players = [player1, player2]
+        winner = -1
+        while winner < 0:
+            self.current_player_idx += 1
+            self.current_player_idx %= len(players)
+            ok = False
+            while not ok:
+                from_pos, slide = players[self.current_player_idx].make_move(
+                    self)
+                ok = self.__move(from_pos, slide, self.current_player_idx)
+                print(f'current game state is :\n {self._board} \n ok state is {ok}')
+ 
+            winner = self.check_winner()
+        return winner

@@ -1,5 +1,6 @@
 import random
 from game import Game, Move, Player
+from minmax import MinMaxPlayer
 
 
 class RandomPlayer(Player):
@@ -48,7 +49,8 @@ class ManualPlayer(Player):
 if __name__ == '__main__':
     g = Game()
     g.print()
-    player1 = ManualPlayer()
+    #player1 = ManualPlayer()
+    player1 = MinMaxPlayer(4)
     player2 = RandomPlayer()
     winner = g.play(player1, player2)
     g.print()
