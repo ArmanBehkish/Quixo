@@ -104,18 +104,17 @@ class MinMaxPlayer(Player):
     
     
     
-    # player score: number of pieces on the board for the player
-    # TESTED
+
     def get_score(self, board: list[list[int]], player: int) -> int:
-        
+        '''The value of each tree node: items considered are:
+        - the winner: +10
+        - the center region of the board: +1 for each piece
+        - Four consecutive pieces in a row or column: +2 for each'''
+
         score = 0
         if player != 1 and player != 0:
             raise ValueError("player must be 0 or 1")
         
-        # for row in range(len(board)):
-        #     for col in range(len(board[row])):
-        #         if board[(row,col)] == player:
-        #             score += 1
 
         winner = self.check_winner(board,player)
         if winner == self._maximizer_player:
@@ -123,7 +122,28 @@ class MinMaxPlayer(Player):
         elif winner == self._minimizer_player:
             score -= 10
 
-        #print( f"inside score function: score is {score} and player is {player} and board is \n {board}")
+
+        #the player having the center of the board has a higher chance of winning
+        center_positions = [(1,1),(1,2),(1,3),(2,1),(2,2),(2,3),(3,1),(3,2),(3,3)]
+        center_score = 0
+        for pos in center_positions:
+            if board[pos] == player:
+                center_score += 1
+        score += center_score
+
+        # consecutive_score = 0
+        # # if the player has 4 consecutive pieces in a row
+        # for x in range(board.shape[0]):
+        #     if (board[x, 0] == player and all(board[x, 0:4] == board[x, 0])) or (board[x, 1] == player and all(board[x, 1:] == board[x, 1])):
+        #         consecutive_score += 1
+        # # if the player has 4 consecutive pieces in a column
+        # for y in range(board.shape[1]):
+        #     if (board[0, y] == player and all(board[0:4, y] == board[0, y])) or (board[1, y] == player and all(board[1:, y] == board[1, y])):
+        #         consecutive_score += 1
+
+        # score += consecutive_score * 2
+
+        
         return deepcopy(score)
 
     

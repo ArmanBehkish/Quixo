@@ -56,6 +56,6 @@ if __name__ == '__main__':
     #player1 = ManualPlayer()
     player1 = MinMaxPlayer(3)
     player2 = RandomPlayer()
-    winner = g.play(player1, player2)
+    winner = g.play(player2, player1)
     g.print()
     print(f"Winner: Player {winner}")
