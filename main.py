@@ -1,4 +1,5 @@
 import random
+import sys
 from game import Game, Move, Player
 from minmax import MinMaxPlayer
 
@@ -47,10 +48,13 @@ class ManualPlayer(Player):
         return from_pos, move
 
 if __name__ == '__main__':
+
+    #sys.setrecursionlimit(100000)
+
     g = Game()
     g.print()
     #player1 = ManualPlayer()
-    player1 = MinMaxPlayer(4)
+    player1 = MinMaxPlayer(3)
     player2 = RandomPlayer()
     winner = g.play(player1, player2)
     g.print()

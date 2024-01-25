@@ -5,8 +5,10 @@ from game import Game, Move, Player
 class MinMaxPlayer(Player):
     def __init__(self, depth: int) -> None:
         super().__init__()
-        self.depth = depth
+        self._depth = depth
+        self.__maxdepthreached = 0
         self.agent = "MinMax Agent"
+        self._minmax_bestmove = None
 
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:  
         self._game = game
@@ -14,16 +16,17 @@ class MinMaxPlayer(Player):
         player = game.get_current_player()
         self._maximizer_player = player
         self._minimizer_player = 1 - player
-        best_move = self.minmax(board, player, self.depth)
-        return best_move
+        self.minmax(board, player,deepcopy(self._depth))
+        return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])
     
 
-    def minmax(self, board: list[list[int]], player: int, depth: int) -> tuple[tuple[int, int], Move]:
+    def minmax(self, board: list[list[int]], player: int, depth: int) -> int:
 
         possible_moves = self.get_possible_moves(board, player)
 
         # terminal node check
         if depth == 0 or self.check_winner(board,player) != -1 or possible_moves == None:
+            #print(f"inside terminal node check: score is {self.get_score(board, player)} and depth is {self._depth} and possible moves are {possible_moves}")
             return self.get_score(board, player)
 
         # here mini player
@@ -31,29 +34,31 @@ class MinMaxPlayer(Player):
             value = float('inf')
             best_move = possible_moves[0]
             for move in possible_moves:
-                new_board = self.make_move_board(board, move, player)
+                new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
                 # original player was assumed as maxplayer, so here we pass the minplayer
-                score = self.minmax(new_board, 1 - player, depth - 1) 
+                score = self.minmax(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1)) 
                 # take minimum score of childs
+                #print(f"inside minmax function: score is {score} and value is {value}")
                 if score < value:
                     value = score
-                    best_move = move
+                    self._minmax_bestmove = deepcopy(move)
+            return value
 
         # here max player
         if player == self._maximizer_player:
             value = float('-inf')
             best_move = possible_moves[0]
             for move in possible_moves:
-                new_board = self.make_move_board(board, move, player)
+                new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
                 # original player was assumed as maxplayer, so here we pass the minplayer
-                score = self.minmax(new_board, 1 - player, depth - 1)
+                score = self.minmax(deepcopy(new_board), deepcopy(1-player),deepcopy(depth - 1))
                 # take the maximum score of childs
                 if score > value:
                     value = score
-                    best_move = move
+                    self._minmax_bestmove = deepcopy(move)
+            return value
 
-        return best_move
- 
+         
 
     # Get the possible moves from the board
     # TESTED
@@ -102,16 +107,24 @@ class MinMaxPlayer(Player):
     # player score: number of pieces on the board for the player
     # TESTED
     def get_score(self, board: list[list[int]], player: int) -> int:
+        
         score = 0
-
         if player != 1 and player != 0:
             raise ValueError("player must be 0 or 1")
         
-        for row in range(len(board)):
-            for col in range(len(board[row])):
-                if board[row][col] == player:
-                    score += 1
-        return score
+        # for row in range(len(board)):
+        #     for col in range(len(board[row])):
+        #         if board[(row,col)] == player:
+        #             score += 1
+
+        winner = self.check_winner(board,player)
+        if winner == self._maximizer_player:
+            score += 10
+        elif winner == self._minimizer_player:
+            score -= 10
+
+        #print( f"inside score function: score is {score} and player is {player} and board is \n {board}")
+        return deepcopy(score)
 
     
 
@@ -134,7 +147,7 @@ class MinMaxPlayer(Player):
             if not acceptable:
                 raise ValueError(f"slide tried in the {self.agent} is not acceptable!")
             return new_board
-        raise ValueError(f"piece taken in the {self.agent} is not acceptable!")
+        raise ValueError(f"piece taken in the {self.agent} is not acceptable! the current board is \n {board} and the current player is {player} and the front position is {row,col}")
 
 
     def take(self, from_pos: tuple[int, int], player_id: int, board: list[list[int]]) -> bool:
@@ -268,7 +281,7 @@ class MinMaxPlayer(Player):
              for x in range(board.shape[0])] == board[0, -1]
         ):
             # return the relative id
-            winner = self._board[0, -1]
+            winner = board[0, -1]
         return winner
 
     def play(self, player1: Player, player2: Player) -> int:
@@ -283,7 +296,7 @@ class MinMaxPlayer(Player):
                 from_pos, slide = players[self.current_player_idx].make_move(
                     self)
                 ok = self.__move(from_pos, slide, self.current_player_idx)
-                print(f'current game state is :\n {self._board} \n ok state is {ok}')
+                #print(f'current game state is :\n {self._board} \n ok state is {ok}')
  
             winner = self.check_winner()
         return winner

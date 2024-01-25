@@ -103,8 +103,9 @@ class Game(object):
             while not ok:
                 from_pos, slide = players[self.current_player_idx].make_move(
                     self)
+                print(f"player {self.current_player_idx} selected position : {from_pos} direction : {slide}")
                 ok = self.__move(from_pos, slide, self.current_player_idx)
-                print(f'current game state is :\n {self._board} \n ok state is {ok}')
+                print(f'current game state is :\n {self._board} \n ok state is {ok} and current player is {self.current_player_idx}')
  
             winner = self.check_winner()
         return winner
