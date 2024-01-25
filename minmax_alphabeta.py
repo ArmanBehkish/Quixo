@@ -13,10 +13,10 @@ class MinMaxPlayer(Player):
 
 # check for occasional loops
     def check_loops(self):
-        if len(self._minmax_bestmove_histroy) > 6:
-            #we have returned the same position 6 times
-            return all(self._minmax_bestmove_histroy[-1] == item for item in self._minmax_bestmove_histroy[-6:])
-        return False
+        if len(self._minmax_bestmove_histroy) > 1:
+            #we have returned the same position 3 times
+            if self._minmax_bestmove_histroy[-3:] == self._minmax_bestmove_histroy[-1]:
+                return True
 
 
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:  
@@ -29,10 +29,11 @@ class MinMaxPlayer(Player):
         
         if self.check_loops():
             print("-----------------------loop detected-------------------------")
-            print("selecting a random move")
+            exit(0)
             # return a random move
             possible_moves = self.get_possible_moves(board, player)
-            #possible_moves.remove(self._minmax_bestmove_histroy[-1])
+            #remove the looping move which is the last item in the history from the possible moves
+            possible_moves.remove(self._minmax_bestmove_histroy[-1])
             self._minmax_bestmove = random.choice(possible_moves)
             self._minmax_bestmove_histroy = []
             # self._depth += 1
@@ -41,7 +42,6 @@ class MinMaxPlayer(Player):
 
         self.minmax(board, player,deepcopy(self._depth))
         self._minmax_bestmove_histroy.append(self._minmax_bestmove)
-        #print(f" here is the returned move history {self._minmax_bestmove_histroy}")
         return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])
     
 
