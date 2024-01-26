@@ -68,6 +68,6 @@ Number of leaves=mnNumber of leaves=mn
 RESULTS
 
 minmax, normal, aginst random, first player:  win percentage: 91/100
-minmax, normal, against random, second player: 
+minmax, normal, against random, second player: win percentage: 87/100
 minmax, alpha beta, aginst random, first player: 
 minmax, alpha beta, against random, second player: 
