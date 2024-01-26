@@ -54,8 +54,7 @@ class MinMaxPlayer(Player):
         possible_moves = self.get_possible_moves(board, player)
 
         # terminal node check
-        if depth == 0 or self.check_winner(board,player) != -1 or possible_moves == None:
-            #print(f"inside terminal node check: score is {self.get_score(board, player)} and depth is {self._depth} and possible moves are {possible_moves}")
+        if depth == 0 or self.check_winner(board,player) != -1 or len(possible_moves) == 0:
             return self.get_score(board, player)
 
         # here mini player
