@@ -26,12 +26,16 @@ class MinMaxPlayer(Player):
         player = game.get_current_player()
         self._maximizer_player = player
         self._minimizer_player = 1 - player
+        self.minmax(board, player,deepcopy(self._depth))
         
         if self.check_loops():
             print("-----------------------loop detected-------------------------")
             print("selecting a random move")
             # return a random move
             possible_moves = self.get_possible_moves(board, player)
+            print(possible_moves)
+            print(len(possible_moves))
+            print(board)
             #possible_moves.remove(self._minmax_bestmove_histroy[-1])
             self._minmax_bestmove = random.choice(possible_moves)
             self._minmax_bestmove_histroy = []
@@ -39,7 +43,7 @@ class MinMaxPlayer(Player):
             # print(f"depth increased to {self._depth}")
 
 
-        self.minmax(board, player,deepcopy(self._depth))
+        
         self._minmax_bestmove_histroy.append(self._minmax_bestmove)
         #print(f" here is the returned move history {self._minmax_bestmove_histroy}")
         return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])

@@ -12,6 +12,33 @@ function minimax(node, depth, maximizingPlayer) is
             value := min(value, minimax(child, depth − 1, TRUE))
         return value
 
+def minimax(state, max_depth, is_player_minimizer, alpha, beta):
+    if max_depth == 0 or state.is_end_state():
+        return evaluation_function(state)
+
+    if is_player_minimizer:
+        value = -math.inf
+        for move in state.possible_moves():
+            evaluation = minimax(move, max_depth - 1, False, alpha , beta)
+            min = min(value, evaluation)
+            # Keeping track of our current best score
+            beta = min(beta, evaluation)
+            if beta <= alpha:
+                break
+        return value
+
+    value = math.inf
+    for move in state.possible_moves():
+        evaluation = minimax(move, max_depth - 1, True, alpha, beta)
+        max = max(value, evaluation)
+        # Keeping track of our current best score
+        alpha = max(alpha, evaluation)
+        if beta <= alpha:
+            break
+    return value
+
+
+
 
 suggestions for score function:
 win-loss-draw check
@@ -21,3 +48,26 @@ the number of possible moves that a player can make in a state
 number of opportunities that a player has to win
 # of consecutive pieces a player has in a row, col, or diagonal
 number of lines player can still win (unblocked lines)
+
+
+
+In a full m-ary tree, the total number of nodes up to depth n is given by:
+
+Total number of nodes=m(n+1)−1m−1Total number of nodes=m−1m(n+1)−1​
+
+However, to find the number of leaves (which are the nodes at the deepest level), you only need to calculate the number of nodes at that level, since all nodes at the deepest level are leaves. In a tree with a constant branching factor, each level has m times more nodes than the level above it.
+
+At depth n (considering the root node is at depth 0), the number of leaves (or nodes at depth n) is:
+
+Number of leaves=mnNumber of leaves=mn
+
+
+
+
+========================================================================
+RESULTS
+
+minmax, normal, aginst random, first player:  91/100
+minmax, normal, against random, second player: 
+minmax, alpha beta, aginst random, first player: 
+minmax, alpha beta, against random, second player: 

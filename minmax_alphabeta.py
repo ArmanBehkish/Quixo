@@ -2,46 +2,52 @@ from copy import deepcopy
 import random
 from game import Game, Move, Player
 
-class MinMaxPlayer(Player):
+class MinMaxAlphaBetaPlayer(Player):
     def __init__(self, depth: int) -> None:
         super().__init__()
         self._depth = depth
-        self.__maxdepthreached = 0
-        self.agent = "MinMax Agent"
+        self.agent = "MinMaxAlphaBeta Agent"
         self._minmax_bestmove = None
         self._minmax_bestmove_histroy = []
 
+
 # check for occasional loops
     def check_loops(self):
-        if len(self._minmax_bestmove_histroy) > 1:
-            #we have returned the same position 3 times
-            if self._minmax_bestmove_histroy[-3:] == self._minmax_bestmove_histroy[-1]:
-                return True
+        if len(self._minmax_bestmove_histroy) > 6:
+            #we have returned the same position 6 times
+            return all(self._minmax_bestmove_histroy[-1] == item for item in self._minmax_bestmove_histroy[-6:])
+        return False
 
 
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:  
+        self._alpha = float('-inf')
+        self._beta = float('inf')
         self._minmax_bestmove = None
         self._game = game
         board = game.get_board()
         player = game.get_current_player()
         self._maximizer_player = player
         self._minimizer_player = 1 - player
+        self.minmax(board, player,deepcopy(self._depth))
+        self._minmax_bestmove_histroy.append(self._minmax_bestmove)
         
         if self.check_loops():
             print("-----------------------loop detected-------------------------")
-            exit(0)
+            print("selecting a random move")
             # return a random move
             possible_moves = self.get_possible_moves(board, player)
-            #remove the looping move which is the last item in the history from the possible moves
-            possible_moves.remove(self._minmax_bestmove_histroy[-1])
+            #print(possible_moves)
+            #print(len(possible_moves))
+            #print(board)
+            if self._minmax_bestmove_histroy[-1] in possible_moves: 
+                possible_moves.remove(self._minmax_bestmove_histroy[-1]) 
             self._minmax_bestmove = random.choice(possible_moves)
             self._minmax_bestmove_histroy = []
             # self._depth += 1
             # print(f"depth increased to {self._depth}")
+       
+        
 
-
-        self.minmax(board, player,deepcopy(self._depth))
-        self._minmax_bestmove_histroy.append(self._minmax_bestmove)
         return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])
     
 
@@ -61,12 +67,15 @@ class MinMaxPlayer(Player):
             for move in possible_moves:
                 new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
                 # original player was assumed as maxplayer, so here we pass the minplayer
-                score = self.minmax(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1)) 
+                score = self.minmax(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1))
+                self._beta  = min(self._beta,score) 
                 # take minimum score of childs
                 #print(f"inside minmax function: score is {score} and value is {value}")
                 if score < value:
                     value = score
-                    #self._minmax_bestmove = deepcopy(move)
+
+                if self._beta <= self._alpha:
+                    break
             return value
 
         # here max player
@@ -77,10 +86,14 @@ class MinMaxPlayer(Player):
                 new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
                 # original player was assumed as maxplayer, so here we pass the minplayer
                 score = self.minmax(deepcopy(new_board), deepcopy(1-player),deepcopy(depth - 1))
+                self._alpha  = max(self._alpha,score) 
                 # take the maximum score of childs
                 if score > value:
                     value = score
                     self._minmax_bestmove = deepcopy(move)
+
+                if self._beta <= self._alpha:
+                    break
             return value
 
          
