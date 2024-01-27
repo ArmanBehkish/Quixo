@@ -13,9 +13,10 @@ class MinMaxPlayer(Player):
 
 # check for occasional loops
     def check_loops(self):
-        if len(self._minmax_bestmove_histroy) > 6:
-            #we have returned the same position 6 times
-            return all(self._minmax_bestmove_histroy[-1] == item for item in self._minmax_bestmove_histroy[-6:])
+        LENGTH = 10
+        if len(self._minmax_bestmove_histroy) > LENGTH:
+            #we have returned the same position "length" times
+            return all(self._minmax_bestmove_histroy[-1] == item for item in self._minmax_bestmove_histroy[-LENGTH:])
         return False
 
 
@@ -289,62 +290,106 @@ class MinMaxPlayer(Player):
         return acceptable,board
     
 
-
+    # Some simple cases tested
     def check_winner(self, board: list[list[int]],player: int) -> int:
-        '''Check if there is a winner,
-        why the winner should not be the current player?'''
+        '''In case there are two complete rows or columns, the current player  loses (i.e., if at the same time player completes a rows for himself and the other, the current player will lose)
+        this seems to reduce the win rate of the agent because the GAME class does not detect two row or col case.'''
 
-     # for each row
+    #flags to check for two complete rows or columns at the same time
+        player_already_completed = -1
+        final_winner = -1
+
+
+        # for each row
         winner = -1
         for x in range(board.shape[0]):
             # if a player has completed an entire row
             if board[x, 0] != -1 and all(board[x, :] == board[x, 0]):
-                # return winner is this guy
                 winner = board[x, 0]
-        #if winner > -1 and winner != player:
+                final_winner = winner
         if winner > -1:
-            return winner
-        # for each column
+            player_already_completed = deepcopy(winner)
+            #check for another row for the other player
+            for x in range(board.shape[0]):
+                # if the other player has completed an entire row
+                if board[x, 0] != -1 and board[x,0] != player_already_completed and all(board[x, :] == board[x, 0]):
+                    final_winner = 1 - player
+                    return final_winner
+            return player_already_completed
+                       
+        # for each column, no rows found
         for y in range(board.shape[1]):
             # if a player has completed an entire column
             if board[0, y] != -1 and all(board[:, y] == board[0, y]):
-                # return the relative id
                 winner = board[0, y]
-        #if winner > -1 and winner != player:
+                final_winner = winner
         if winner > -1:
-            return winner
+            player_already_completed = deepcopy(winner)
+            #check for another column for the other player
+            for y in range(board.shape[1]):
+                # if the other player has completed an entire column
+                if board[0, y] != -1 and board[0,y] != player_already_completed and all(board[:, y] == board[0, y]):
+                    final_winner = 1 - player
+                    return final_winner
+            return player_already_completed
+        
+
         # if a player has completed the principal diagonal
-        if board[0, 0] != -1 and all(
-            [board[x, x]
-                for x in range(board.shape[0])] == board[0, 0]
-        ):
+        if board[0, 0] != -1 and all([board[x, x] for x in range(board.shape[0])] == board[0, 0]):
             # return the relative id
             winner = board[0, 0]
-        #if winner > -1 and winner != self.get_current_player():
         if winner > -1:
-            return winner
+            final_winner=winner
+            return final_winner
+        
         # if a player has completed the secondary diagonal
-        if board[0, -1] != -1 and all(
-            [board[x, -(x + 1)]
-             for x in range(board.shape[0])] == board[0, -1]
-        ):
+        if board[0, -1] != -1 and all([board[x, -(x + 1)] for x in range(board.shape[0])] == board[0, -1]):
             # return the relative id
             winner = board[0, -1]
-        return winner
+        if winner > -1:
+            final_winner=winner
+            return final_winner
+        
+        return final_winner
 
-    def play(self, player1: Player, player2: Player) -> int:
-        '''Play the game. Returns the winning player'''
-        players = [player1, player2]
-        winner = -1
-        while winner < 0:
-            self.current_player_idx += 1
-            self.current_player_idx %= len(players)
-            ok = False
-            while not ok:
-                from_pos, slide = players[self.current_player_idx].make_move(
-                    self)
-                ok = self.__move(from_pos, slide, self.current_player_idx)
-                #print(f'current game state is :\n {self._board} \n ok state is {ok}')
- 
-            winner = self.check_winner()
-        return winner
+
+    # def check_winner(self, board: list[list[int]],player: int) -> int:
+    #     '''Same Logic as the GAME class'''
+
+    #  # for each row
+    #     winner = -1
+    #     for x in range(board.shape[0]):
+    #         # if a player has completed an entire row
+    #         if board[x, 0] != -1 and all(board[x, :] == board[x, 0]):
+    #             # return winner is this guy
+    #             winner = board[x, 0]
+    #     #if winner > -1 and winner != player:
+    #     if winner > -1:
+    #         return winner
+    #     # for each column
+    #     for y in range(board.shape[1]):
+    #         # if a player has completed an entire column
+    #         if board[0, y] != -1 and all(board[:, y] == board[0, y]):
+    #             # return the relative id
+    #             winner = board[0, y]
+    #     #if winner > -1 and winner != player:
+    #     if winner > -1:
+    #         return winner
+    #     # if a player has completed the principal diagonal
+    #     if board[0, 0] != -1 and all(
+    #         [board[x, x]
+    #             for x in range(board.shape[0])] == board[0, 0]
+    #     ):
+    #         # return the relative id
+    #         winner = board[0, 0]
+    #     #if winner > -1 and winner != self.get_current_player():
+    #     if winner > -1:
+    #         return winner
+    #     # if a player has completed the secondary diagonal
+    #     if board[0, -1] != -1 and all(
+    #         [board[x, -(x + 1)]
+    #          for x in range(board.shape[0])] == board[0, -1]
+    #     ):
+    #         # return the relative id
+    #         winner = board[0, -1]
+    #     return winner
