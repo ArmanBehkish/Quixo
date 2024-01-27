@@ -12,11 +12,12 @@ class MinMaxAlphaBetaPlayer(Player):
         self._minmax_bestmove_histroy = []
 
 
+# check for occasional loops
     def check_loops(self):
-        '''check if the same move has been returned 6 times in a row'''
-        if len(self._minmax_bestmove_histroy) > 6:
-            #we have returned the same position 6 times
-            return all(self._minmax_bestmove_histroy[-1] == item for item in self._minmax_bestmove_histroy[-6:])
+        LENGTH = 10
+        if len(self._minmax_bestmove_histroy) > LENGTH:
+            #we have returned the same position "length" times
+            return all(self._minmax_bestmove_histroy[-1] == item for item in self._minmax_bestmove_histroy[-LENGTH:])
         return False
 
 
@@ -31,7 +32,7 @@ class MinMaxAlphaBetaPlayer(Player):
         self._maximizer_player = player
         self._minimizer_player = 1 - player
         self.alphabeta(board, player,deepcopy(self._depth),alpha,beta)
-        self._minmax_bestmove_histroy.append(self._minmax_bestmove)
+        
         
         if self.check_loops():
             print("-----------------------loop detected-------------------------")
@@ -49,7 +50,7 @@ class MinMaxAlphaBetaPlayer(Player):
             # print(f"depth increased to {self._depth}")
        
         
-
+        self._minmax_bestmove_histroy.append(self._minmax_bestmove)
         return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])
     
 
@@ -64,6 +65,8 @@ class MinMaxAlphaBetaPlayer(Player):
         # here mini player
         if player == self._minimizer_player:
             value = float('inf')
+            if depth == self._depth or depth == self._depth - 1:
+                possible_moves.sort(key=lambda x: self.get_score(self.make_move_board(deepcopy(board), deepcopy(x), player), player))
             for move in possible_moves:
                 new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
                 # original player was assumed as maxplayer, so here we pass the minplayer
@@ -83,6 +86,8 @@ class MinMaxAlphaBetaPlayer(Player):
         # here max player
         if player == self._maximizer_player:
             value = float('-inf')
+            if depth == self._depth or depth == self._depth - 1:
+                possible_moves.sort(key=lambda x: self.get_score(self.make_move_board(deepcopy(board), deepcopy(x), player), player),reverse=True)
             for move in possible_moves:
                 new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
                 # original player was assumed as maxplayer, so here we pass the minplayer

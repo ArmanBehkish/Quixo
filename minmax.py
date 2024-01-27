@@ -10,6 +10,7 @@ class MinMaxPlayer(Player):
         self.agent = "MinMax Agent"
         self._minmax_bestmove = None
         self._minmax_bestmove_histroy = []
+        self._minmax_memory = {}
 
 # check for occasional loops
     def check_loops(self):
@@ -61,26 +62,35 @@ class MinMaxPlayer(Player):
         # here mini player
         if player == self._minimizer_player:
             value = float('inf')
-            best_move = possible_moves[0]
             for move in possible_moves:
-                new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
-                # original player was assumed as maxplayer, so here we pass the minplayer
-                score = self.minmax(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1)) 
+                if (tuple(board.flatten()),move,player) in self._minmax_memory.keys():
+                    score = self._minmax_memory[(tuple(board.flatten()),move,player)]
+                    #print(f"taking from memory in minimizer: score is {score}")
+                else:
+                    new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
+                    score = self.minmax(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1)) 
+
+                    self._minmax_memory[(deepcopy(tuple(board.flatten())),deepcopy(move),deepcopy(player))] = deepcopy(score)
+
+
                 # take minimum score of childs
-                #print(f"inside minmax function: score is {score} and value is {value}")
                 if score < value:
                     value = score
-                    #self._minmax_bestmove = deepcopy(move)
             return value
 
         # here max player
         if player == self._maximizer_player:
             value = float('-inf')
-            best_move = possible_moves[0]
             for move in possible_moves:
-                new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
-                # original player was assumed as maxplayer, so here we pass the minplayer
-                score = self.minmax(deepcopy(new_board), deepcopy(1-player),deepcopy(depth - 1))
+                if (tuple(board.flatten()),move,player) in self._minmax_memory.keys():
+                    score = self._minmax_memory[(tuple(board.flatten()),move,player)]
+                    #print(f"taking from memory in maximizer: score is {score}")
+                else:
+                    new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
+                    score = self.minmax(deepcopy(new_board), deepcopy(1-player),deepcopy(depth - 1))
+
+                    self._minmax_memory[(deepcopy(tuple(board.flatten())),deepcopy(move),deepcopy(player))] = deepcopy(score)
+
                 # take the maximum score of childs
                 if score > value:
                     value = score

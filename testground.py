@@ -20,8 +20,15 @@ board[3, :] =  [ 0, 1, 0, 1, 0]
 board[4, :] =  [ 0, 1, 0, 0, 1]
 
 print(board)
+new_tuple = (tuple(board.flatten()),"hello")
+new_dict = {}
+new_dict[new_tuple] = 1
+print(new_dict[new_tuple])
+
+
+
 p = MinMaxAlphaBetaPlayer(3)
-print(p.check_winner(board, 0))
+#print(p.check_winner(board, 0))
 
 
 
