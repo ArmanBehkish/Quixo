@@ -2,7 +2,7 @@ from copy import deepcopy
 import random
 from game import Game, Move, Player
 
-class MinMaxPlayer(Player):
+class MinMaxAlphaBetaPlayer2(Player):
     def __init__(self, depth: int) -> None:
         super().__init__()
         self._depth = depth
@@ -22,13 +22,15 @@ class MinMaxPlayer(Player):
 
 
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:  
+        alpha = float('-inf')
+        beta = float('inf')
         self._minmax_bestmove = None
         self._game = game
         board = game.get_board()
         player = game.get_current_player()
         self._maximizer_player = player
         self._minimizer_player = 1 - player
-        self.minmax(board, player,deepcopy(self._depth))
+        self.alphabeta(board, player,deepcopy(self._depth),alpha,beta)
         
         if self.check_loops():
             print("-----------------------loop detected-------------------------")
@@ -51,7 +53,7 @@ class MinMaxPlayer(Player):
         return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])
     
 
-    def minmax(self, board: list[list[int]], player: int, depth: int) -> int:
+    def alphabeta(self, board: list[list[int]], player: int, depth: int,alpha:int ,beta: int) -> int:
 
         possible_moves = self.get_possible_moves(board, player)
 
@@ -62,30 +64,42 @@ class MinMaxPlayer(Player):
         # here mini player
         if player == self._minimizer_player:
             value = float('inf')
+            # Trying to sort moves to improve alpha beta efficiency (near to root branches) - ascending for maximizer
+            if depth == self._depth or depth == self._depth - 1:
+                possible_moves.sort(key=lambda x: self.get_score(self.make_move_board(deepcopy(board), deepcopy(x), player), player))
             for move in possible_moves:
                 # avoid extra calls to minmax if the value is already in memory
                 if (tuple(board.flatten()),move,player) in self._minmax_memory.keys():
                     score = self._minmax_memory[(tuple(board.flatten()),move,player)]
                 else:
                     new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
-                    score = self.minmax(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1)) 
+                    score = self.alphabeta(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1),alpha,beta) 
 
                     self._minmax_memory[(deepcopy(tuple(board.flatten())),deepcopy(move),deepcopy(player))] = deepcopy(score)
 
                 # take minimum score of childs
                 if score < value:
                     value = score
+
+                if value < alpha:
+                    break
+
+                beta = min(beta, value)
+
             return value
 
         # here max player
         if player == self._maximizer_player:
             value = float('-inf')
+            # descending sort of moves for maximizer
+            if depth == self._depth or depth == self._depth - 1:
+                possible_moves.sort(key=lambda x: self.get_score(self.make_move_board(deepcopy(board), deepcopy(x), player), player),reverse=True)
             for move in possible_moves:
                 if (tuple(board.flatten()),move,player) in self._minmax_memory.keys():
                     score = self._minmax_memory[(tuple(board.flatten()),move,player)]
                 else:
                     new_board = self.make_move_board(deepcopy(board), deepcopy(move), player)
-                    score = self.minmax(deepcopy(new_board), deepcopy(1-player),deepcopy(depth - 1))
+                    score = self.alphabeta(deepcopy(new_board), deepcopy(1-player),deepcopy(depth - 1),alpha,beta)
 
                     self._minmax_memory[(deepcopy(tuple(board.flatten())),deepcopy(move),deepcopy(player))] = deepcopy(score)
 
@@ -93,6 +107,12 @@ class MinMaxPlayer(Player):
                 if score > value:
                     value = score
                     self._minmax_bestmove = deepcopy(move)
+
+                if beta < value:
+                    break
+
+                alpha = max(alpha, value)
+
             return value
 
          

@@ -3,6 +3,7 @@ import sys
 from game import Game, Move, Player
 from minmax import MinMaxPlayer
 from minmax_alphabeta import MinMaxAlphaBetaPlayer
+from minmax_alphabeta_2 import MinMaxAlphaBetaPlayer2
 import time
 import tqdm
 
@@ -70,8 +71,9 @@ if __name__ == '__main__':
         g = Game()
         #g.print()
         #player1 = ManualPlayer()
-        player1 = MinMaxPlayer(3)
+        #player1 = MinMaxPlayer(3)
         #player1 = MinMaxAlphaBetaPlayer(3)
+        player1 = MinMaxAlphaBetaPlayer2(3)
         player2 = RandomPlayer()
         winner = g.play(player2, player1)
         number_of_wins[winner] += 1
