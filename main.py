@@ -12,6 +12,9 @@ class RandomPlayer(Player):
     def __init__(self) -> None:
         super().__init__()
 
+    def __str__(self) -> str:
+        return "Random Player Agent"
+
     def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:
         from_pos = (random.randint(0, 4), random.randint(0, 4))
         move = random.choice([Move.TOP, Move.BOTTOM, Move.LEFT, Move.RIGHT])
@@ -59,7 +62,7 @@ class ManualPlayer(Player):
 if __name__ == '__main__':
 
     #sys.setrecursionlimit(100000)
-    number_of_games = 10
+    number_of_games = 50
     count = 0
     number_of_wins = {0: 0, 1: 0}
     agent = "MinMaxPlayer"
@@ -69,17 +72,15 @@ if __name__ == '__main__':
     start_time = time.time()
     for x in range(number_of_games):
         g = Game()
-        #g.print()
         #player1 = ManualPlayer()
         #player1 = MinMaxPlayer(3)
         #player1 = MinMaxAlphaBetaPlayer(3)
-        player1 = MinMaxAlphaBetaPlayer2(3)
-        player2 = RandomPlayer()
-        winner = g.play(player2, player1)
+        player2 = MinMaxAlphaBetaPlayer2(4)
+        player1 = RandomPlayer()
+        winner = g.play(player1, player2)
         number_of_wins[winner] += 1
         count += 1
-        #g.print()
         print(f"Player {winner}: number of games played: {count} and number of wins: {number_of_wins[winner]}")
     end_time = time.time()
 
-    print(f" {agent} won {number_of_wins[1]} times in {(end_time - start_time)/60} minutes!")
+    print(f" {player1} won {number_of_wins[0]} times and {player2} won {number_of_wins[1]} in {(end_time - start_time)/60} minutes!")

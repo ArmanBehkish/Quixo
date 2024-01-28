@@ -65,13 +65,28 @@ Number of leaves=mnNumber of leaves=mn
 
 
 ========================================================================
-RESULTS
+RESULTS (100 games)
 
 minmax, normal, aginst random, first player:  win percentage: 91/100
 minmax, normal, against random, second player: win percentage: 87/100
 minmax, alpha beta, aginst random, first player: 
 minmax, alpha beta, against random, second player: 
 
+
+these are with correct winner check:
+
+fail-hard variation
+minmax, alpha beta, with memory, aginst random, first player:    MinMaxAlphaBeta with memory Agent with depth 3 won 72 times and Random Player Agent won 28 in 15 minutes!
+
+
+minmax, alpha beta, with memory, against random, second player: 
+Random Player Agent won 22 times and MinMaxAlphaBeta with memory Agent with depth 3 won 78 in 15 minutes!
+
+agent works both when playing first or second
+
+
+with depth 4:
+ Random Player Agent won 6 times and MinMaxAlphaBeta with memory Agent with depth 4 won 94 in 114 minutes!
 
 
 
