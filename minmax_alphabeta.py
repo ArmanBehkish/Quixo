@@ -11,6 +11,9 @@ class MinMaxAlphaBetaPlayer(Player):
         self._minmax_bestmove = None
         self._minmax_bestmove_histroy = []
 
+    def __str__(self) -> str:
+        return f"{self.agent} with depth {self._depth}"
+
 
 # check for occasional loops
     def check_loops(self):
@@ -39,15 +42,12 @@ class MinMaxAlphaBetaPlayer(Player):
             print("selecting a random move")
             # return a random move
             possible_moves = self.get_possible_moves(board, player)
-            #print(possible_moves)
-            #print(len(possible_moves))
-            #print(board)
             if self._minmax_bestmove_histroy[-1] in possible_moves: 
                 possible_moves.remove(self._minmax_bestmove_histroy[-1]) 
             self._minmax_bestmove = random.choice(possible_moves)
             self._minmax_bestmove_histroy = []
+            # Trying iterative deepening
             # self._depth += 1
-            # print(f"depth increased to {self._depth}")
        
         
         self._minmax_bestmove_histroy.append(self._minmax_bestmove)
@@ -72,7 +72,6 @@ class MinMaxAlphaBetaPlayer(Player):
                 # original player was assumed as maxplayer, so here we pass the minplayer
                 score = self.alphabeta(deepcopy(new_board), deepcopy(1-player), deepcopy(depth - 1),alpha,beta)
                 # take minimum score of childs
-                #print(f"inside minmax function: score is {score} and value is {value}")
                 if score < value:
                     value = score
 

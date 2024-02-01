@@ -1,6 +1,63 @@
 from copy import deepcopy
 import random
+import numpy as np
 from game import Game, Move, Player
+
+class RandomPlayer(Player):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def make_move(self, game: 'Game') -> tuple[tuple[int, int], Move]:
+        '''Do just a random acceptable move'''
+        self._board = game.get_board()
+        self._player = game.get_current_player()
+
+        return random.choice(self.get_possible_moves(self._board, self._player))
+
+
+    def get_possible_moves(self, board: list[list[int]], player: int) -> list[tuple[tuple[int, int], Move]]:
+        possible_moves = []
+        # len of ndarray returns the shape of the first dimension
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                # If the piece belongs to the current player or is neutral
+                if board[row][col] == player or board[row][col] == -1:
+                    if row == 0:
+                        if col == 0:
+                            possible_moves.append(((row, col), Move.BOTTOM))
+                            possible_moves.append(((row, col), Move.RIGHT))
+                        if col == len(board[row]) - 1:
+                            possible_moves.append(((row, col), Move.BOTTOM))
+                            possible_moves.append(((row, col), Move.LEFT))
+                        if col != 0 and col != len(board[row]) - 1:
+                            possible_moves.append(((row, col), Move.BOTTOM))
+                            possible_moves.append(((row, col), Move.LEFT))
+                            possible_moves.append(((row, col), Move.RIGHT))
+                    if row == len(board) - 1:
+                        if col == 0:
+                            possible_moves.append(((row, col), Move.TOP))
+                            possible_moves.append(((row, col), Move.RIGHT))
+                        if col == len(board[row]) - 1:
+                            possible_moves.append(((row, col), Move.TOP))
+                            possible_moves.append(((row, col), Move.LEFT))
+                        if col != 0 and col != len(board[row]) - 1:
+                            possible_moves.append(((row, col), Move.TOP))
+                            possible_moves.append(((row, col), Move.LEFT))
+                            possible_moves.append(((row, col), Move.RIGHT))
+                    if row != 0 and row != len(board) - 1:
+                        if col == 0:
+                            possible_moves.append(((row, col), Move.TOP))
+                            possible_moves.append(((row, col), Move.BOTTOM))
+                            possible_moves.append(((row, col), Move.RIGHT))
+                        if col == len(board[row]) - 1:
+                            possible_moves.append(((row, col), Move.TOP))
+                            possible_moves.append(((row, col), Move.BOTTOM))
+                            possible_moves.append(((row, col), Move.LEFT))
+        return possible_moves
+
+
+
+
 
 class MinMaxPlayer(Player):
     def __init__(self, depth: int) -> None:
@@ -11,6 +68,9 @@ class MinMaxPlayer(Player):
         self._minmax_bestmove = None
         self._minmax_bestmove_histroy = []
         self._minmax_memory = {}
+
+    def __str__(self) -> str:
+        return f"{self.agent} with depth {self._depth}"
 
 # check for occasional loops
     def check_loops(self):
@@ -180,10 +240,33 @@ class MinMaxPlayer(Player):
 
         # score += consecutive_score * 2
 
-        
+        # Try monte carlo rollouts to compute the static evaluation of the state
+        # winner = self.check_winner(board,player)
+        # if winner == self._maximizer_player:
+        #     score += 100
+        # elif winner == self._minimizer_player:
+        #     score -= 100
+        # else:
+        #     number_of_games = 10
+        #     number_of_wins = {0: 0, 1: 0}
+        #     player1 = RandomPlayer()
+        #     player2 = RandomPlayer()    
+        #     # if np.array_equal(board, self._game.get_board()):
+        #     #     print("the current board is the same as the game board")
+        #     # else:
+        #     #     print("the current board is not the same as the game board")
+
+        #     for x in range(number_of_games):      
+        #         winner = self._game.play(player1, player2)
+        #         number_of_wins[winner] += 1
+        #     score += number_of_wins[player] * 0.7
+
         return deepcopy(score)
 
-    
+
+    def make_random_move(self,board,player) -> tuple[tuple[int, int], Move]:
+        '''Do just a random acceptable move'''
+        return random.choice(self.get_possible_moves(board, player))
 
 
     def make_move_board(self, board: list[list[int]], move: tuple[tuple[int, int], Move], player: int) -> list[list[int]]:
@@ -299,105 +382,108 @@ class MinMaxPlayer(Player):
     
 
     # Some simple cases tested
-    def check_winner(self, board: list[list[int]],player: int) -> int:
-        '''In case there are two complete rows or columns, the current player  loses (i.e., if at the same time player completes a rows for himself and the other, the current player will lose)
-        this seems to reduce the win rate of the agent because the GAME class does not detect two row or col case.'''
-
-    #flags to check for two complete rows or columns at the same time
-        player_already_completed = -1
-        final_winner = -1
-
-
-        # for each row
-        winner = -1
-        for x in range(board.shape[0]):
-            # if a player has completed an entire row
-            if board[x, 0] != -1 and all(board[x, :] == board[x, 0]):
-                winner = board[x, 0]
-                final_winner = winner
-        if winner > -1:
-            player_already_completed = deepcopy(winner)
-            #check for another row for the other player
-            for x in range(board.shape[0]):
-                # if the other player has completed an entire row
-                if board[x, 0] != -1 and board[x,0] != player_already_completed and all(board[x, :] == board[x, 0]):
-                    final_winner = 1 - player
-                    return final_winner
-            return player_already_completed
-                       
-        # for each column, no rows found
-        for y in range(board.shape[1]):
-            # if a player has completed an entire column
-            if board[0, y] != -1 and all(board[:, y] == board[0, y]):
-                winner = board[0, y]
-                final_winner = winner
-        if winner > -1:
-            player_already_completed = deepcopy(winner)
-            #check for another column for the other player
-            for y in range(board.shape[1]):
-                # if the other player has completed an entire column
-                if board[0, y] != -1 and board[0,y] != player_already_completed and all(board[:, y] == board[0, y]):
-                    final_winner = 1 - player
-                    return final_winner
-            return player_already_completed
-        
-
-        # if a player has completed the principal diagonal
-        if board[0, 0] != -1 and all([board[x, x] for x in range(board.shape[0])] == board[0, 0]):
-            # return the relative id
-            winner = board[0, 0]
-        if winner > -1:
-            final_winner=winner
-            return final_winner
-        
-        # if a player has completed the secondary diagonal
-        if board[0, -1] != -1 and all([board[x, -(x + 1)] for x in range(board.shape[0])] == board[0, -1]):
-            # return the relative id
-            winner = board[0, -1]
-        if winner > -1:
-            final_winner=winner
-            return final_winner
-        
-        return final_winner
-
-
     # def check_winner(self, board: list[list[int]],player: int) -> int:
-    #     '''Same Logic as the GAME class'''
+    #     '''In case there are two complete rows or columns, the current player  loses (i.e., if at the same time player completes a rows for himself and the other, the current player will lose)
+    #     this seems to reduce the win rate of the agent because the GAME class does not detect two row or col case.'''
 
-    #  # for each row
+    # #flags to check for two complete rows or columns at the same time
+    #     player_already_completed = -1
+    #     final_winner = -1
+
+
+    #     # for each row
     #     winner = -1
     #     for x in range(board.shape[0]):
     #         # if a player has completed an entire row
     #         if board[x, 0] != -1 and all(board[x, :] == board[x, 0]):
-    #             # return winner is this guy
     #             winner = board[x, 0]
-    #     #if winner > -1 and winner != player:
+    #             final_winner = winner
     #     if winner > -1:
-    #         return winner
-    #     # for each column
+    #         player_already_completed = deepcopy(winner)
+    #         #check for another row for the other player
+    #         for x in range(board.shape[0]):
+    #             # if the other player has completed an entire row
+    #             if board[x, 0] != -1 and board[x,0] != player_already_completed and all(board[x, :] == board[x, 0]):
+    #                 final_winner = 1 - player
+    #                 return final_winner
+    #         return player_already_completed
+                       
+    #     # for each column, no rows found
     #     for y in range(board.shape[1]):
     #         # if a player has completed an entire column
     #         if board[0, y] != -1 and all(board[:, y] == board[0, y]):
-    #             # return the relative id
     #             winner = board[0, y]
-    #     #if winner > -1 and winner != player:
+    #             final_winner = winner
     #     if winner > -1:
-    #         return winner
+    #         player_already_completed = deepcopy(winner)
+    #         #check for another column for the other player
+    #         for y in range(board.shape[1]):
+    #             # if the other player has completed an entire column
+    #             if board[0, y] != -1 and board[0,y] != player_already_completed and all(board[:, y] == board[0, y]):
+    #                 final_winner = 1 - player
+    #                 return final_winner
+    #         return player_already_completed
+        
+
     #     # if a player has completed the principal diagonal
-    #     if board[0, 0] != -1 and all(
-    #         [board[x, x]
-    #             for x in range(board.shape[0])] == board[0, 0]
-    #     ):
+    #     if board[0, 0] != -1 and all([board[x, x] for x in range(board.shape[0])] == board[0, 0]):
     #         # return the relative id
     #         winner = board[0, 0]
-    #     #if winner > -1 and winner != self.get_current_player():
     #     if winner > -1:
-    #         return winner
+    #         final_winner=winner
+    #         return final_winner
+        
     #     # if a player has completed the secondary diagonal
-    #     if board[0, -1] != -1 and all(
-    #         [board[x, -(x + 1)]
-    #          for x in range(board.shape[0])] == board[0, -1]
-    #     ):
+    #     if board[0, -1] != -1 and all([board[x, -(x + 1)] for x in range(board.shape[0])] == board[0, -1]):
     #         # return the relative id
     #         winner = board[0, -1]
-    #     return winner
+    #     if winner > -1:
+    #         final_winner=winner
+    #         return final_winner
+        
+    #     return final_winner
+
+
+    def check_winner(self, board: list[list[int]],player: int) -> int:
+        '''Same Logic as the GAME class'''
+
+     # for each row
+        winner = -1
+        for x in range(board.shape[0]):
+            # if a player has completed an entire row
+            if board[x, 0] != -1 and all(board[x, :] == board[x, 0]):
+                # return winner is this guy
+                winner = board[x, 0]
+        #if winner > -1 and winner != player:
+        if winner > -1:
+            return winner
+        # for each column
+        for y in range(board.shape[1]):
+            # if a player has completed an entire column
+            if board[0, y] != -1 and all(board[:, y] == board[0, y]):
+                # return the relative id
+                winner = board[0, y]
+        #if winner > -1 and winner != player:
+        if winner > -1:
+            return winner
+        # if a player has completed the principal diagonal
+        if board[0, 0] != -1 and all(
+            [board[x, x]
+                for x in range(board.shape[0])] == board[0, 0]
+        ):
+            # return the relative id
+            winner = board[0, 0]
+        #if winner > -1 and winner != self.get_current_player():
+        if winner > -1:
+            return winner
+        # if a player has completed the secondary diagonal
+        if board[0, -1] != -1 and all(
+            [board[x, -(x + 1)]
+             for x in range(board.shape[0])] == board[0, -1]
+        ):
+            # return the relative id
+            winner = board[0, -1]
+        return winner
+
+
+

@@ -54,29 +54,20 @@ class ManualPlayer(Player):
         print(f"selected position : {from_pos} direction : {move}")
         return from_pos, move
     
-
-
-
-
-
 if __name__ == '__main__':
 
-    #sys.setrecursionlimit(100000)
-    number_of_games = 50
+    number_of_games = 100
     count = 0
     number_of_wins = {0: 0, 1: 0}
-    agent = "MinMaxPlayer"
 
     # start a timer
 
     start_time = time.time()
     for x in range(number_of_games):
         g = Game()
-        #player1 = ManualPlayer()
-        #player1 = MinMaxPlayer(3)
-        #player1 = MinMaxAlphaBetaPlayer(3)
-        player2 = MinMaxAlphaBetaPlayer2(4)
         player1 = RandomPlayer()
+        #player2 = MinMaxAlphaBetaPlayer(3)
+        player2 = MinMaxAlphaBetaPlayer2(4)
         winner = g.play(player1, player2)
         number_of_wins[winner] += 1
         count += 1

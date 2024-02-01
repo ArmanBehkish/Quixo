@@ -41,16 +41,13 @@ class MinMaxAlphaBetaPlayer2(Player):
             print("selecting a random move")
             # return a random move
             possible_moves = self.get_possible_moves(board, player)
-            #possible_moves.remove(self._minmax_bestmove_histroy[-1])
             self._minmax_bestmove = random.choice(possible_moves)
             self._minmax_bestmove_histroy = []
+            # Try iterative deepening
             # self._depth += 1
-            # print(f"depth increased to {self._depth}")
 
-
-        
+  
         self._minmax_bestmove_histroy.append(self._minmax_bestmove)
-        #print(f" here is the returned move history {self._minmax_bestmove_histroy}")
         return ((self._minmax_bestmove[0][1],self._minmax_bestmove[0][0]), self._minmax_bestmove[1])
     
 
@@ -118,7 +115,7 @@ class MinMaxAlphaBetaPlayer2(Player):
 
          
 
-    # Get the possible moves from the board
+    # Get the possible moves from the current board
     # TESTED
     def get_possible_moves(self, board: list[list[int]], player: int) -> list[tuple[tuple[int, int], Move]]:
         possible_moves = []
@@ -319,7 +316,6 @@ class MinMaxAlphaBetaPlayer2(Player):
         return acceptable,board
     
 
-    # # Some simple cases tested
     # def check_winner(self, board: list[list[int]],player: int) -> int:
     #     '''In case there are two complete rows or columns, the current player  loses (i.e., if at the same time player completes a rows for himself and the other, the current player will lose)
     #     this seems to reduce the win rate of the agent because the GAME class does not detect two row or col case.'''

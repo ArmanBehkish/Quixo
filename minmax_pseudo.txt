@@ -89,6 +89,19 @@ with depth 4:
  Random Player Agent won 6 times and MinMaxAlphaBeta with memory Agent with depth 4 won 94 in 114 minutes!
 
 
+in simplple minmax agent, tried monte carlo roll-out for static evaluation of terminal nodes. it was too slow to be useful
+
+ Random Player Agent won 29 times and MinMaxAlphaBeta with memory Agent with depth 3 won 71 in 15.801696713765462 minutes!
+
+
+ Random Player Agent won 28 times and MinMaxAlphaBeta Agent with depth 3 won **72** in 76.30714883804322 minutes! (almost 45 seconds per game)
+
+ MinMaxAlphaBeta with memory Agent with ***depth 3*** won ***81 times*** and Random Player Agent won 19 in 13.81549804210663 minutes (***8.5 seconds*** to finish each game)!
+
+MinMaxAlphaBeta with memory Agent with **depth 4** won ***95 times*** and Random Player Agent won 5 in 89.74851703246435 minutes!  (almost ***53 seconds*** per game)
+
+
+ Random Player Agent won 18 times and MinMaxAlphaBeta with memory Agent with depth 3 won 82 in 14.87390695810318 minutes!  
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 alpha-beta fail-hard
