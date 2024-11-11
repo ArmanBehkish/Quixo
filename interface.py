@@ -80,7 +80,7 @@ class MatrixInterface(QWidget):
         right_layout.addWidget(self.player_label)
 
         # Status label
-        self.status_label = QLabel("Waiting for move...")
+        self.status_label = QLabel("")
         self.status_label.setStyleSheet(
             """
             QLabel {
@@ -252,14 +252,16 @@ class MatrixInterface(QWidget):
         self.update_display(self.matrix)
         self.game_restarted = True
         self.last_clicked_button = (-1, -1)  # Reset button state
-        self.waiting_for_click = False  # Reset click state
-        # Import the specific function
-
-        main()  # Call the function directly
+        self.waiting_for_click = False  # Reset click stat
         self.close()
 
     def set_status(self, message: str):
         self.status_label.setText(message)
+
+    def update(self):
+        self.player_label.update()
+        self.status_label.update()
+        self.winner_label.update()
 
     def close(self):
         self.window.close()

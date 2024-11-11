@@ -1,5 +1,5 @@
 import random
-
+from typing import Optional
 from game import Game, Move, Player
 from minmax_alphabeta import MinMaxAlphaBetaPlayer
 from minmax_alphabeta_2 import MinMaxAlphaBetaPlayer2
@@ -30,7 +30,7 @@ class MyPlayer(Player):
     def get_move(self, from_pos, new_click) -> Move:
         x_old, y_old = from_pos
         x, y = new_click
-        move = Move.TOP
+        move: Optional[Move] = None
 
         # corner positions
         if x_old == 0 and y_old == 0:
@@ -57,36 +57,42 @@ class MyPlayer(Player):
         # non-corner positions
         if x_old in [1, 2, 3]:
             if y_old == 0:
+                # first row
                 if x == 0:
                     move = Move.LEFT
                 if x == 4:
                     move = Move.RIGHT
-                if x in [1, 2, 3]:
+                if x == x_old:
                     move = Move.BOTTOM
             if y_old == 4:
+                # last row
                 if x == 0:
                     move = Move.LEFT
                 if x == 4:
                     move = Move.RIGHT
-                if x in [1, 2, 3]:
+                if x == x_old:
                     move = Move.TOP
 
         if y_old in [1, 2, 3]:
             if x_old == 0:
+                # first column
                 if y == 0:
                     move = Move.TOP
                 if y == 4:
                     move = Move.BOTTOM
-                if y in [1, 2, 3]:
+                if y == y_old:
                     move = Move.RIGHT
             if x_old == 4:
+                # last column
                 if y == 0:
                     move = Move.TOP
                 if y == 4:
                     move = Move.BOTTOM
-                if y in [1, 2, 3]:
+                if y == y_old:
                     move = Move.LEFT
 
+        if move is None:
+            raise ValueError(f"No move found for {from_pos} to {new_click}")
         return move
 
     def make_move(
@@ -98,21 +104,16 @@ class MyPlayer(Player):
         window.waiting_for_click = True
         while window.waiting_for_click:
             QApplication.processEvents()
-        print("wait finsihed")
         x, y = window.last_clicked_button
         window.set_status(f"Position Selected ({x}, {y}), Choose direction...")
         from_pos = (x, y)
         window.waiting_for_click = True
         while window.waiting_for_click:
             QApplication.processEvents()
-        print("second wait finsihed")
         x, y = window.last_clicked_button
         new_click = (x, y)
         move = self.get_move(from_pos, new_click)
         window.set_status(f"moving position {from_pos} to {move}")
-        # move_input = int(input().strip())
-        # move_input = random.randint(0, 3)
-        # move = Move(move_input)
         return from_pos, move
 
 
@@ -127,9 +128,9 @@ if __name__ == "__main__":
     # sys.exit(app.exec_())
     player1 = MyPlayer()
     # player2 = MinMaxAlphaBetaPlayer(depth=3)
-    player3 = MinMaxAlphaBetaPlayer2(depth=3)
+    player2 = MinMaxAlphaBetaPlayer2(depth=3)
     # p = RandomPlayer()
-    winner = g.play(player1, player3)
+    winner = g.play(player1, player2)
 
     if winner == 0:
         window.set_status(f"Game Over! You win!")

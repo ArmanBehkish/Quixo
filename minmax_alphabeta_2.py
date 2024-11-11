@@ -1,5 +1,7 @@
 from copy import deepcopy
 import random
+import time
+from PyQt5.QtWidgets import QApplication
 from game import Game, Move, Player
 from interface import MatrixInterface
 
@@ -31,6 +33,7 @@ class MinMaxAlphaBetaPlayer2(Player):
     def make_move(
         self, game: "Game", window: MatrixInterface
     ) -> tuple[tuple[int, int], Move]:
+
         alpha = float("-inf")
         beta = float("inf")
         self._minmax_bestmove = None

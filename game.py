@@ -113,6 +113,7 @@ class Game(object):
                     self.window.update_display(self._board)
                 else:
                     print(f"Not an acceptable move!")
+                    self.window.set_status("Not an acceptable move!")
             winner = self.check_winner()
         return winner
 
