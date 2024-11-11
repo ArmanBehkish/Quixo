@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from enum import Enum
 import numpy as np
-
+import requests
+from variables import ZEBEDEE_API_KEY, ZEBEDEE_API_URL, PLAYER_REWARD_DESCRIPTION_TEMPLATE
 # Rules on PDF
 
 
@@ -209,3 +210,23 @@ class Game(object):
                 # move the piece down
                 self._board[(self._board.shape[0] - 1, from_pos[1])] = piece
         return acceptable
+    
+    
+    def _reward_player(self, winner_id: int, amount: int):
+        '''Reward the winning player with a specified amount in sats'''
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {ZEBEDEE_API_KEY}"
+        }
+        data = {
+            "amount": amount,
+            "description": PLAYER_REWARD_DESCRIPTION_TEMPLATE.format(winner_id=winner_id)
+        }
+        response = requests.post(ZEBEDEE_API_URL, headers=headers, json=data)
+        
+        if response.status_code == 201:
+            print(f"Player {winner_id} rewarded with {amount} sats.")
+            print("Payment request:", response.json().get("payment_request"))
+        else:
+            print("Failed to reward player:", response.json())
+

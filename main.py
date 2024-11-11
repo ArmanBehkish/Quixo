@@ -30,3 +30,7 @@ if __name__ == '__main__':
     winner = g.play(player1, player2)
     g.print()
     print(f"Winner: Player {winner}")
+    #HERE  Generating QR code for reward
+    # Reward the winning player
+    reward_amount = 10  # Set reward amount in sats
+    g._reward_player(winner, reward_amount)
