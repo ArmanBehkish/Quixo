@@ -126,16 +126,6 @@ if __name__ == "__main__":
     window.show()
     # sys.exit(app.exec_())
     player1 = MyPlayer()
-<<<<<<< HEAD
-    player2 = RandomPlayer()
-    winner = g.play(player1, player2)
-    g.print()
-    print(f"Winner: Player {winner}")
-    #HERE  Generating QR code for reward
-    # Reward the winning player
-    reward_amount = 10  # Set reward amount in sats
-    g._reward_player(winner, reward_amount)
-=======
     # player2 = MinMaxAlphaBetaPlayer(depth=3)
     player3 = MinMaxAlphaBetaPlayer2(depth=3)
     # p = RandomPlayer()
@@ -148,4 +138,3 @@ if __name__ == "__main__":
 
     # Wait for user action (close or restart)
     app.exec_()
->>>>>>> dac3ced (PyQt5 intf added)
