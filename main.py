@@ -123,6 +123,32 @@ class MyPlayer(Player):
 
 if __name__ == "__main__":
     zbd_client = zbd(apikey=ZEBEDEE_API_KEY)
+
+    #HERE Preliminary tests #
+    # Validate the Lightning address
+    try:
+        zbd_client.validate_lightning_address(ZEBEDEE_LIGHTNING_ADDRESS)
+        print(f"Lightning address {ZEBEDEE_LIGHTNING_ADDRESS} is valid.")
+    except Exception as e:
+        print(f"Error validating Lightning address: {e}")
+        exit(1)
+
+    # Get wallet details
+    try:
+        wallet_details = zbd_client.get_wallet_details()
+        print(f"Wallet details: {wallet_details}")
+
+        # Ensure wallet balance is over REWARD_AMOUNT
+        wallet_balance = wallet_details.get('balance', 0)
+        if float(wallet_balance) >= REWARD_AMOUNT:
+            print(f"Wallet balance {wallet_balance} is over the reward amount {REWARD_AMOUNT}.")
+        else:
+            print(f"Wallet balance {wallet_balance} is below the reward amount {REWARD_AMOUNT}.")
+    except Exception as e:
+        print(f"Error getting wallet details: {e}")
+        exit(1)
+
+    #HERE Payment wall #
     # Generate paywall
     charge_response = zbd_client.create_charge(
         amount_of_seconds_to_expire_after=INVOICE_EXPIRY,
@@ -138,10 +164,11 @@ if __name__ == "__main__":
     qr.save("paywall_qr.png")
     print(f"QR Code saved as paywall_qr.png")
     print(f"Lightning Invoice: {lightning_invoice}")
-    # Wait for payment confirmation (simplified for demonstration)
+    # HERE Wait for payment confirmation (simplified for demonstration) #
     # HACK To avoid payment
     input("Press Enter after payment...")
 
+    # HERE Generate Pyqt window #
     app = QApplication(sys.argv)
     g = Game()
     window = MatrixInterface(g.get_board())
@@ -150,6 +177,7 @@ if __name__ == "__main__":
 
     window.show()
 
+    # HERE Game definition #
     player1 = MyPlayer()
     player2 = MinMaxAlphaBetaPlayer2(depth=int(window.ai_search_depth))
 
@@ -160,7 +188,7 @@ if __name__ == "__main__":
     else:
         window.set_status(f"Game Over! Stupid AI wins!")
 
-    # Generate withdrawal request for the winner
+    # HERE Generate withdrawal request for the winner #
     reward_description = PLAYER_REWARD_DESCRIPTION_TEMPLATE.format(winner_id=winner)
     withdrawal_response = zbd_client.create_withdrawal_request(
         amount_of_seconds_to_expire_after=INVOICE_EXPIRY,
