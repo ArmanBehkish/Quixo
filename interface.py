@@ -8,12 +8,16 @@ from PyQt5.QtWidgets import (
     QLabel,
     QComboBox,
 )
+from PyQt5.QtGui import QPixmap, QImage
 import sys
 import numpy as np
 from PIL import Image
-from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
+from variables import *
+from zbd import zbd
+import qrcode
+import time
 
 
 class MatrixInterface(QWidget):
@@ -25,7 +29,7 @@ class MatrixInterface(QWidget):
         self.last_clicked_button: tuple[int, int] = (-1, -1)
         self.waiting_for_click = False
         self.game_restarted = False
-        self.ai_search_depth = 4
+        self.ai_search_depth = 2
 
     def init_ui(self):
         main_layout = QHBoxLayout()
@@ -318,15 +322,74 @@ class MatrixInterface(QWidget):
     def pay_sat_to_start(self):
         # Implement the functionality to handle payment and start the game
         print("Pay Sat to Start button clicked")
-        # Create a game app instance and generate QR code
-        # game_app = GameApp()
-        # game_app.create_invoice()
+
+        def show_paywall_qr(self):
+            # Create a QDialog for the QR overlay
+            dialog = QDialog(self)
+            dialog.setWindowTitle("Scan QR to Start Game")
+            dialog.setModal(True)
+
+            # Create layout
+            layout = QVBoxLayout()
+
+            # Load and display QR image using PIL and QPixmap
+            try:
+                # Open image with PIL
+                pil_image = Image.open("paywall_qr.png")
+
+                # Convert PIL image to QPixmap
+                qr_label = QLabel()
+                pil_image = pil_image.resize((300, 300))  # Resize for better display
+                img_data = pil_image.convert("RGBA").tobytes("raw", "RGBA")
+                qimage = QPixmap.fromImage(
+                    QImage(
+                        img_data,
+                        pil_image.size[0],
+                        pil_image.size[1],
+                        QImage.Format_RGBA8888,
+                    )
+                )
+                qr_label.setPixmap(qimage)
+
+                # Add to layout
+                layout.addWidget(qr_label)
+
+                # Add instruction label
+                instruction = QLabel("Scan this QR code to pay and start the game")
+                instruction.setAlignment(Qt.AlignCenter)
+                layout.addWidget(instruction)
+
+                dialog.setLayout(layout)
+                dialog.exec_()
+
+            except Exception as e:
+                print(f"Error loading QR code: {e}")
+                self.set_status("Error loading payment QR code")
+
+        show_paywall_qr(self)
 
     def take_your_prize(self):
         # Implement the functionality to allow the player to take their prize
         print("Take Your Prize! button clicked")
         # Example: handle prize distribution
-        pass
+        # Generate withdrawal request for the winner
+        reward_description = PLAYER_REWARD_DESCRIPTION_TEMPLATE.format(winner_id=winner)
+        withdrawal_response = zbd_client.create_withdrawal_request(
+            amount_of_seconds_to_expire_after=INVOICE_EXPIRY,
+            amount_msats=REWARD_AMOUNT,
+            description="Got your reward",
+            internal_id="11af01d092444a317cb33faa6b8304b8",
+        )
+
+        withdrawal_id = withdrawal_response["id"]
+        withdrawal_details = zbd_client.get_withdrawal_request_details(withdrawal_id)
+        withdrawal_invoice = withdrawal_details["invoice"]["request"]
+
+        print("Congratulations! Here is your reward:")
+        qr = qrcode.make(withdrawal_invoice)
+        qr.save("reward_qr.png")
+        print(f"QR Code saved as reward_qr.png")
+        print(f"Lightning Invoice: {withdrawal_invoice}")
 
     def on_difficulty_changed(self, index):
         difficulty = self.difficulty_combo.currentText()
