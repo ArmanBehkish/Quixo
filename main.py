@@ -24,13 +24,13 @@ class MyPlayer(Player):
 
 if __name__ == '__main__':
     g = Game()
+    # HERE Generating paywall so player has to pay.
     g.print()
     player1 = MyPlayer()
     player2 = RandomPlayer()
     winner = g.play(player1, player2)
     g.print()
     print(f"Winner: Player {winner}")
-    #HERE  Generating QR code for reward
+    #HERE  Generating withdraw via qr code for reward.
     # Reward the winning player
-    reward_amount = 10  # Set reward amount in sats
-    g._reward_player(winner, reward_amount)
+    

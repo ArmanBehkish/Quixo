@@ -1,0 +1,13 @@
+name: BITCOIN
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - requests
+  - qrcode
+  - tk
+  - flask   # Optional, if a local server is used
+  - numpy==1.26.0
+  - zebedee
+

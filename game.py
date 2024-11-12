@@ -3,6 +3,8 @@ from copy import deepcopy
 from enum import Enum
 import numpy as np
 import requests
+from paywall_manager import PaywallManager
+from reward_manager import RewardManager
 from variables import ZEBEDEE_API_KEY, ZEBEDEE_API_URL, PLAYER_REWARD_DESCRIPTION_TEMPLATE
 # Rules on PDF
 
@@ -35,9 +37,32 @@ class Player(ABC):
 
 
 class Game(object):
-    def __init__(self) -> None:
+    def __init__(self,reward_amount=1000) -> None:
         self._board = np.ones((5, 5), dtype=np.uint8) * -1
         self.current_player_idx = 1
+        self.paywall_manager = PaywallManager()
+        self.reward_manager = RewardManager()
+        self.reward_amount = reward_amount
+
+
+    def start_game(self):
+        """
+        Asking for payment before starting the game
+        """
+        print("Creating paywall...")
+        invoice_id = self.paywall_manager.create_invoice(amount=self.reward_amount)
+        
+        if not invoice_id:
+            print("Failed to create invoice. Exiting.")
+            return
+        
+        # Step 2: Check Payment Status
+        payment_confirmed = False
+        while not payment_confirmed:
+            payment_confirmed = self.paywall_manager.check_payment(invoice_id)
+        
+        # Step 3: Reward the player after payment confirmation
+        print("Starting game and rewarding player.")
 
     def get_board(self) -> np.ndarray:
         '''
@@ -211,22 +236,18 @@ class Game(object):
                 self._board[(self._board.shape[0] - 1, from_pos[1])] = piece
         return acceptable
     
-    
-    def _reward_player(self, winner_id: int, amount: int):
-        '''Reward the winning player with a specified amount in sats'''
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {ZEBEDEE_API_KEY}"
-        }
-        data = {
-            "amount": amount,
-            "description": PLAYER_REWARD_DESCRIPTION_TEMPLATE.format(winner_id=winner_id)
-        }
-        response = requests.post(ZEBEDEE_API_URL, headers=headers, json=data)
-        
-        if response.status_code == 201:
-            print(f"Player {winner_id} rewarded with {amount} sats.")
-            print("Payment request:", response.json().get("payment_request"))
-        else:
-            print("Failed to reward player:", response.json())
 
+    def _reward_player(self):
+
+        '''Handles the reward for the player.'''
+        
+        print("Player has collected rewards.")
+        withdrawal_id = self.reward_manager.create_withdrawal(amount=self.reward_amount)
+        
+        # Check withdrawal status
+        withdrawal_completed = False
+        while not withdrawal_completed:
+            withdrawal_completed = self.reward_manager.check_withdrawal_status(withdrawal_id)
+        
+        if withdrawal_completed:
+            print("Player reward has been successfully withdrawn.")
