@@ -10,6 +10,10 @@ from PyQt5.QtWidgets import (
 )
 import sys
 import numpy as np
+from PIL import Image
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QDialog
 
 
 class MatrixInterface(QWidget):
@@ -21,7 +25,7 @@ class MatrixInterface(QWidget):
         self.last_clicked_button: tuple[int, int] = (-1, -1)
         self.waiting_for_click = False
         self.game_restarted = False
-        self.ai_search_depth = 3
+        self.ai_search_depth = 4
 
     def init_ui(self):
         main_layout = QHBoxLayout()
@@ -314,8 +318,9 @@ class MatrixInterface(QWidget):
     def pay_sat_to_start(self):
         # Implement the functionality to handle payment and start the game
         print("Pay Sat to Start button clicked")
-        # Example: initiate payment process
-        pass
+        # Create a game app instance and generate QR code
+        # game_app = GameApp()
+        # game_app.create_invoice()
 
     def take_your_prize(self):
         # Implement the functionality to allow the player to take their prize
