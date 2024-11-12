@@ -125,11 +125,10 @@ if __name__ == "__main__":
     g.set_window(window)
     window.update_display(g.get_board())
     window.show()
-    # sys.exit(app.exec_())
+
     player1 = MyPlayer()
-    # player2 = MinMaxAlphaBetaPlayer(depth=3)
-    player2 = MinMaxAlphaBetaPlayer2(depth=3)
-    # p = RandomPlayer()
+    player2 = MinMaxAlphaBetaPlayer2(depth=int(window.ai_search_depth))
+
     winner = g.play(player1, player2)
 
     if winner == 0:

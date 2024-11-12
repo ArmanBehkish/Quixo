@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QLabel,
+    QComboBox,
 )
 import sys
 import numpy as np
@@ -20,34 +21,34 @@ class MatrixInterface(QWidget):
         self.last_clicked_button: tuple[int, int] = (-1, -1)
         self.waiting_for_click = False
         self.game_restarted = False
+        self.ai_search_depth = 3
 
     def init_ui(self):
         main_layout = QHBoxLayout()
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(600, 500)
 
         # Left side - Matrix Display
         left_layout = QVBoxLayout()
         grid_layout = QGridLayout()
-        grid_layout.setSpacing(10)
+        grid_layout.setSpacing(5)
 
         self.buttons = []
         for i in range(5):
             row_buttons = []
             for j in range(5):
-                button = QPushButton(f"{self.matrix[i, j]:.1f}")
+                button = QPushButton("")
+                button.setFixedSize(80, 80)
                 button.setStyleSheet(
                     """
                     QPushButton {
                         border: 2px solid black;
-                        min-width: 80px;
-                        min-height: 80px;
                         font-size: 18px;
                         background-color: #f0f0f0;
                     }
                     QPushButton:hover {
                         background-color: #e0e0e0;
                     }
-                """
+                    """
                 )
                 button.clicked.connect(
                     lambda checked, row=i, col=j: self.on_matrix_button_clicked(
@@ -58,11 +59,12 @@ class MatrixInterface(QWidget):
                 row_buttons.append(button)
             self.buttons.append(row_buttons)
         left_layout.addLayout(grid_layout)
+        left_layout.addStretch()
         main_layout.addLayout(left_layout)
 
         # Right side - Controls
         right_layout = QVBoxLayout()
-        right_layout.setSpacing(20)
+        right_layout.setSpacing(10)
 
         # Current player label
         self.player_label = QLabel("Current Player: Player 1")
@@ -88,35 +90,54 @@ class MatrixInterface(QWidget):
                 padding: 10px;
                 background-color: #f8f8f8;
                 border-radius: 5px;
-                min-height: 50px;
+                min-height: 40px;
             }
         """
         )
         self.status_label.setWordWrap(True)
         right_layout.addWidget(self.status_label)
 
-        # Winner label
-        self.winner_label = QLabel("")
-        self.winner_label.setStyleSheet(
-            """
-            QLabel {
-                font-size: 18px;
-                padding: 15px;
-                border-radius: 5px;
-                min-height: 60px;
-            }
-        """
-        )
-        right_layout.addWidget(self.winner_label)
+        # # Winner label
+        # self.winner_label = QLabel("")
+        # self.winner_label.setStyleSheet(
+        #     """
+        #     QLabel {
+        #         font-size: 18px;
+        #         padding: 10px;
+        #         border-radius: 5px;
+        #         min-height: 40px;
+        #     }
+        # """
+        # )
+        # right_layout.addWidget(self.winner_label)
 
-        # Restart button
-        restart_btn = QPushButton("Restart Game")
-        restart_btn.setStyleSheet(
+        # Difficulty selection
+        difficulty_label = QLabel("Select Difficulty Level:")
+        difficulty_label.setStyleSheet("font-size: 16px; padding: 5px;")
+        right_layout.addWidget(difficulty_label)
+
+        self.difficulty_combo = QComboBox()
+        self.difficulty_combo.addItems(["Easy", "Medium", "Hard"])
+        self.difficulty_combo.setStyleSheet(
+            """
+            QComboBox {
+                font-size: 16px;
+                padding: 5px;
+                min-height: 30px;
+            }
+            """
+        )
+        self.difficulty_combo.currentIndexChanged.connect(self.on_difficulty_changed)
+        right_layout.addWidget(self.difficulty_combo)
+
+        # Pay Sat to Start button
+        pay_sat_btn = QPushButton("Pay Sat to Start")
+        pay_sat_btn.setStyleSheet(
             """
             QPushButton {
                 font-size: 16px;
                 padding: 10px;
-                min-height: 50px;
+                min-height: 40px;
                 background-color: #4CAF50;
                 color: white;
                 border-radius: 5px;
@@ -124,10 +145,30 @@ class MatrixInterface(QWidget):
             QPushButton:hover {
                 background-color: #45a049;
             }
-        """
+            """
         )
-        restart_btn.clicked.connect(self.restart_game)
-        right_layout.addWidget(restart_btn)
+        pay_sat_btn.clicked.connect(self.pay_sat_to_start)
+        right_layout.addWidget(pay_sat_btn)
+
+        # Take Your Prize button
+        take_prize_btn = QPushButton("Take Your Prize!")
+        take_prize_btn.setStyleSheet(
+            """
+            QPushButton {
+                font-size: 16px;
+                padding: 10px;
+                min-height: 40px;
+                background-color: #FFD700;
+                color: black;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #DAA520;
+            }
+            """
+        )
+        take_prize_btn.clicked.connect(self.take_your_prize)
+        right_layout.addWidget(take_prize_btn)
 
         # Exit button
         exit_btn = QPushButton("Exit")
@@ -136,7 +177,7 @@ class MatrixInterface(QWidget):
             QPushButton {
                 font-size: 16px;
                 padding: 10px;
-                min-height: 50px;
+                min-height: 40px;
                 background-color: #f44336;
                 color: white;
                 border-radius: 5px;
@@ -149,10 +190,14 @@ class MatrixInterface(QWidget):
         exit_btn.clicked.connect(self.close)
         right_layout.addWidget(exit_btn)
 
-        # Add some stretching to keep controls at the top
         right_layout.addStretch()
 
-        main_layout.addLayout(right_layout)
+        # Set a fixed width for the right side
+        right_widget = QWidget()
+        right_widget.setLayout(right_layout)
+        right_widget.setFixedWidth(250)
+
+        main_layout.addWidget(right_widget)
         self.setLayout(main_layout)
 
     def randomize_matrix(self):
@@ -265,3 +310,30 @@ class MatrixInterface(QWidget):
 
     def close(self):
         self.window.close()
+
+    def pay_sat_to_start(self):
+        # Implement the functionality to handle payment and start the game
+        print("Pay Sat to Start button clicked")
+        # Example: initiate payment process
+        pass
+
+    def take_your_prize(self):
+        # Implement the functionality to allow the player to take their prize
+        print("Take Your Prize! button clicked")
+        # Example: handle prize distribution
+        pass
+
+    def on_difficulty_changed(self, index):
+        difficulty = self.difficulty_combo.currentText()
+        print(f"Difficulty level selected: {difficulty}")
+        self.set_difficulty_level(difficulty)
+
+    def set_difficulty_level(self, difficulty):
+        # Implement how the difficulty level affects your game
+        if difficulty == "Easy":
+            self.ai_search_depth = 2
+        elif difficulty == "Medium":
+            self.ai_search_depth = 3
+        elif difficulty == "Hard":
+            self.ai_search_depth = 4
+        print(self.ai_search_depth)
