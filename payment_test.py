@@ -11,8 +11,7 @@ import requests
 import uuid
 
 # Replace with your actual API key and URL
-ZEBEDEE_API_KEY = "JY2knFEHU13TxAPqqSH240nx7aao4OrN"
-ZEBEDEE_API_URL = "https://api.zebedee.io/v0"
+from variables import ZEBEDEE_API_URL,ZEBEDEE_API_KEY
 
 def generate_internal_id():
     return str(uuid.uuid4())
@@ -37,7 +36,7 @@ def create_invoice(amount, description, internal_id):
         return None
 
 # Example usage
-amount = 1000  # Amount in millisats
+amount = 10  # Amount in millisats
 description = "My Payment Description"
 internal_id = "5289f02c-41c4-4022-85db-b26664bb6f06"
 invoice = create_invoice(amount, description, internal_id)

@@ -5,7 +5,7 @@ from variables import ZEBEDEE_API_KEY
 api_key = ZEBEDEE_API_KEY
 address = "koraty@zbd.gg"
 
-url = f"https://sandbox-api.zebedee.io/v0/ln-address/validate/{address}"
+url = f"https://api.zebedee.io/v0/ln-address/validate/{address}"
 
 headers = {"apikey": api_key}
 
